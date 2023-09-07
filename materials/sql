@@ -1,0 +1,78 @@
+
+id	name	manager_id
+1	Alice	NULL
+2	Bob	    1
+3	Chuck	1
+4	Drake	2
+5	Eve	    2
+
+
+select a.name, b.name as managerName
+       from a.employees left join b.employees
+            on a.manager_id = b.id
+
+
+with t1 as
+(
+    select name, year(created_at) as year
+    from transactions as t join users as u
+        on t.id = u.id
+    where year(created_at) in ('2019', '2020')
+    group by name, year(created_at)
+    having count(name) > 3
+)
+
+select a.name as customer_name
+from t1 as a join t1 as b
+   on a.name = b.name
+where a.year > b.year
+
+with t1 as (
+select name,
+     count(employees.id) as number_of_employees,
+     sum(if(salary > 100000, 1, 0)) as employees_100k
+from employees join departments
+    on department_id = departments.id
+group by name
+having number_of_employees > 10)
+
+select ((employees_100k / number_of_employees) * 100)
+                    as percentage_over_100k,
+        name as department_name,
+        number_of_employees
+from t1
+order by percentage_over_100k desc
+limit 3
+
+
+select name
+from neighborhoods
+where id not in
+ (select distinct neighborhood_id from users);
+
+select sum(ifnull(distance, 0)) as distance_traveled, name
+from users left join rides
+    on users.id = passenger_user_id
+group by passenger_user_id
+order by distance_traveled desc
+
+
+with t1 as (
+select
+user_id, position_name,
+lag(position_name) over(partition by user_id) as previous
+from user_experiences
+),
+t2 as
+(
+    select *
+    from t1
+    where position_name = "Data Scientist" and
+        previous = "Data Analyst"
+)
+
+select count(distinct t2.user_id)/count(distinct t1.user_id) as percentage
+ from t1 left join t2
+    on t1.user_id = t2.user_id
+
+

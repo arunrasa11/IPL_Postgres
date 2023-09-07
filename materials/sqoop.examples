@@ -1,0 +1,82 @@
+→ Import Overwrite Hive Table: "--hive-overwrite" attribute can be used to truncate existing hive table before importing data again to that hive table.
+ sqoop import  \
+ --connect jdbc:mysql://localhost:3306/retail_db \
+ --username root \
+ --password mysqlrootpassword \
+ --driver com.mysql.cj.jdbc.Driver \
+ --table order_items \
+ --hive-import \
+ --hive-database retail \
+ --hive-table order_items_hive \
+ --hive-overwrite \
+ -m 1
+
+
+sqoop import  \
+ --connect jdbc:mysql://localhost:3306/retail_db \
+ --username root \
+ --password mysqlrootpassword \
+ --driver com.mysql.cj.jdbc.Driver \
+ --table order_items \
+ --target-dir hdfs://localhost:9000/user/username/scoop_import
+
+
+ → Import With Delete: "--delete-target-dir" argument can be used to delete target HDFS directory(if exists) before importing data.
+ sqoop import \
+ --connect jdbc:mysql://localhost:3306/retail_db \
+ --username root \
+ --password mysqlrootpassword \
+ --driver com.mysql.cj.jdbc.Driver \
+ --table products \
+ --target-dir product \
+ --delete-target-dir \
+ --bindir $SQOOP_HOME/lib/ \
+ -m 1
+
+ → Import With Append: "--append" argument can be used to append imported data to the existing HDFS directory
+sqoop import  \
+ --connect jdbc:mysql://localhost:3306/retail_db \
+ --username root \
+ --password mysqlrootpassword \
+ --driver com.mysql.cj.jdbc.Driver \
+ --table orders \
+ --where "order_id in (11,1001,1021,1011)" \
+ --target-dir hdfs://localhost:9000/user/username/scoop_import/partial_column_where \
+ --bindir $SQOOP_HOME/lib/ \
+--append
+
+→ Import Data with Nulls: If nulls are not handled properly then column with null data will be fetched and it will be import as 'null' String.
+There are different arguments to handle nulls in String and number. Both "--null-string" & "--null-non-string" clauses can be used in a single import.
+
+Example 1: If nulls are not handled then it will give output like below.
+  sqoop import  \
+ --connect jdbc:mysql://localhost:3306/retail_db \
+ --username root \
+ --password mysqlrootpassword \
+ --driver com.mysql.cj.jdbc.Driver \
+ --query 'select order_status,order_id from orders where order_id in (1,100,102,101) AND $CONDITIONS' \
+ --target-dir hdfs://localhost:9000/user/username/scoop_import/query_orders_null \
+ --bindir $SQOOP_HOME/lib/ \
+ --split-by order_id
+
+ → Import With WHERE Clause: "--where" argument can be used to filter data from table during import. In the below example, where clause is used to fetch only order_id with values 1,100,102,101"
+sqoop import  \
+ --connect jdbc:mysql://localhost:3306/retail_db \
+ --username root \
+ --password mysqlrootpassword \
+ --driver com.mysql.cj.jdbc.Driver \
+ --table orders \
+ --where "order_id in (1,100,102,101)" \
+ --target-dir hdfs://localhost:9000/user/username/scoop_import/partial_column_where \
+ --bindir $SQOOP_HOME/lib/
+
+
+→ Import as Avro File: "--as-avrodatafile" argument can be used to import data in Avro data format.
+ sqoop import  \
+ --connect jdbc:mysql://localhost:3306/retail_db \
+ --username root \
+ --password mysqlrootpassword \
+ --driver com.mysql.cj.jdbc.Driver \
+ --table order_items \
+ --target-dir hdfs://localhost:9000/user/username/scoop_import/avro \
+--as-avrodatafile
